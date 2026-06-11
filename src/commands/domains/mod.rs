@@ -132,11 +132,8 @@ fn build_summaries(
             summaries.sort_by_key(|b| std::cmp::Reverse(b.total_bytes));
         }
         DomainSortBy::AvgTime => {
-            summaries.sort_by(|a, b| {
-                b.avg_time_ms
-                    .partial_cmp(&a.avg_time_ms)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            });
+            summaries
+                .sort_by(|a, b| f64::total_cmp(&b.avg_time_ms, &a.avg_time_ms));
         }
     }
 
