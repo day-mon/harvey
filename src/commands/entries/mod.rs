@@ -64,8 +64,8 @@ pub struct EntriesArgs {
     pub limit: usize,
 
     /// Include response body text in JSON/JSONL output.
-    /// By default, body text is excluded to keep output compact.
-    /// When set, `response.content.text` is included (null if absent).
+    /// By default, `response.content.text` is `null` to keep output compact.
+    /// When set, the actual body text is included for entries that have it.
     #[arg(long, action = clap::ArgAction::SetTrue)]
     pub include_body: bool,
 }
@@ -102,7 +102,7 @@ struct EntryOutput<'a> {
     time: f64,
     /// The HTTP request.
     request: &'a crate::har::types::Request,
-    /// The HTTP response (content.text conditionally included).
+    /// The HTTP response (content.text is null unless --include-body is set).
     response: ResponseOutput<'a>,
     /// Cache state.
     cache: &'a crate::har::types::Cache,
@@ -132,15 +132,21 @@ struct ResponseOutput<'a> {
     body_size: i64,
 }
 
-/// Content wrapper — text only included when present and requested.
+/// Content wrapper for entries JSONL — mirrors the HAR spec fields.
 #[derive(Debug, Serialize)]
 struct ContentOutput<'a> {
     size: u64,
     #[serde(rename = "mimeType")]
     mime_type: &'a str,
-    /// Only included when --include-body is set.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Whether the raw HAR contains a response body.
+    #[serde(rename = "hasBody")]
+    has_body: bool,
+    /// Response body text. Null when --include-body is not set or when
+    /// the raw HAR has no body.
     text: Option<&'a str>,
+    compression: Option<u64>,
+    encoding: Option<&'a str>,
+    comment: Option<&'a str>,
 }
 
 /// Fields computed by harvey, namespaced under `_computed`.
@@ -315,7 +321,11 @@ fn render_jsonl(entries: &[&Entry], include_body: bool) -> Result<()> {
                 content: ContentOutput {
                     size: entry.response.content.size,
                     mime_type: &entry.response.content.mime_type,
+                    has_body: entry.response.content.text.is_some(),
                     text,
+                    compression: entry.response.content.compression,
+                    encoding: entry.response.content.encoding.as_deref(),
+                    comment: entry.response.content.comment.as_deref(),
                 },
                 redirect_url: &entry.response.redirect_url,
                 headers_size: entry.response.headers_size,
@@ -378,5 +388,88 @@ fn format_size(bytes: u64) -> String {
         format!("{:.1}K", bytes as f64 / KB as f64)
     } else {
         format!("{bytes}B")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json;
+
+    use super::ContentOutput;
+
+    #[test]
+    fn content_output_always_has_body_flag() {
+        let out = ContentOutput {
+            size: 100,
+            mime_type: "application/json",
+            has_body: true,
+            text: None,
+            compression: None,
+            encoding: None,
+            comment: None,
+        };
+        let json = serde_json::to_string(&out).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed["hasBody"], true);
+        assert!(parsed["text"].is_null());
+    }
+
+    #[test]
+    fn content_output_includes_text_when_present() {
+        let out = ContentOutput {
+            size: 200,
+            mime_type: "text/html",
+            has_body: true,
+            text: Some("<html></html>"),
+            compression: Some(50),
+            encoding: Some("base64"),
+            comment: Some("test"),
+        };
+        let json = serde_json::to_string(&out).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed["hasBody"], true);
+        assert_eq!(parsed["text"], "<html></html>");
+        assert_eq!(parsed["compression"], 50);
+        assert_eq!(parsed["encoding"], "base64");
+        assert_eq!(parsed["comment"], "test");
+    }
+
+    #[test]
+    fn content_output_null_text_when_no_body() {
+        let out = ContentOutput {
+            size: 0,
+            mime_type: "application/json",
+            has_body: false,
+            text: None,
+            compression: None,
+            encoding: None,
+            comment: None,
+        };
+        let json = serde_json::to_string(&out).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed["hasBody"], false);
+        assert!(parsed["text"].is_null());
+    }
+
+    #[test]
+    fn content_output_all_fields_present() {
+        let out = ContentOutput {
+            size: 100,
+            mime_type: "text/plain",
+            has_body: false,
+            text: None,
+            compression: None,
+            encoding: None,
+            comment: None,
+        };
+        let json = serde_json::to_string(&out).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert!(parsed.get("size").is_some());
+        assert!(parsed.get("mimeType").is_some());
+        assert!(parsed.get("hasBody").is_some());
+        assert!(parsed.get("text").is_some());
+        assert!(parsed.get("compression").is_some());
+        assert!(parsed.get("encoding").is_some());
+        assert!(parsed.get("comment").is_some());
     }
 }
