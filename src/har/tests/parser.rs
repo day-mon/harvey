@@ -1,3 +1,8 @@
+#![expect(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "unwrap/expect are idiomatic in tests"
+)]
 //! Unit tests for `har::parser`.
 
 use std::path::Path;
