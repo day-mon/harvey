@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0](https://github.com/day-mon/harvey/releases/tag/v0.1.0) - 2026-06-11
+
 ### Added
+
 - Initial release of `harvey` — AI-native HAR file analyzer
 - `analyze` command for aggregate statistics and distributions
 - `entries` command for listing and filtering HTTP entries
@@ -20,3 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI/CD pipelines with format, clippy, and test checks
 - Pre-commit hooks via rusty-hook
 - Git-derived versioning via vergen-git2
+- Command directory restructuring (capture split into submodules)
+- Parallel CDP event draining and body fetching
+- `BufWriter` on per-entry JSONL output
+- Performance optimizations in stats and time range computation
