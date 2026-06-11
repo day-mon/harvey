@@ -213,3 +213,18 @@ fn filter_bad_regex() {
     let result = EntryPredicate::new().with_url_pattern("[invalid");
     assert!(result.is_err());
 }
+
+// ---------------------------------------------------------------------------
+// Domains command tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn domains_command_builds_summaries() {
+    let har = parser::load(fixture_path()).expect("should parse fixture");
+    // Use the library function directly (build_summaries is pub(crate) in
+    // commands::domains, so we exercise it via the public CLI path in a
+    // separate test; here we verify the underlying stats logic).
+    let stats = stats::compute(&har.log);
+    assert_eq!(stats.unique_domains, 4);
+    assert!(stats.total_bytes > 0);
+}

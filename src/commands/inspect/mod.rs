@@ -424,11 +424,7 @@ fn timing_bottleneck(t: &crate::har::types::Timings) -> String {
     phases
         .iter()
         .filter(|(_, v)| v.is_some_and(|x| x >= 0.0))
-        .max_by(|a, b| {
-            a.1.unwrap_or(0.0)
-                .partial_cmp(&b.1.unwrap_or(0.0))
-                .unwrap_or(std::cmp::Ordering::Equal)
-        })
+        .max_by(|a, b| f64::total_cmp(&a.1.unwrap_or(0.0), &b.1.unwrap_or(0.0)))
         .map_or("unknown", |(name, _)| name)
         .to_owned()
 }
@@ -454,5 +450,56 @@ fn format_bytes(bytes: u64) -> String {
         format!("{:.1} KB", bytes as f64 / KB as f64)
     } else {
         format!("{bytes} B")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::timing_bottleneck;
+    use crate::har::types::Timings;
+
+    #[test]
+    fn bottleneck_identifies_wait_phase() {
+        let t = Timings {
+            blocked: Some(1.0),
+            dns: Some(2.0),
+            connect: Some(3.0),
+            send: 0.5,
+            wait: 150.0,
+            receive: 10.0,
+            ssl: Some(1.0),
+            comment: None,
+        };
+        assert_eq!(timing_bottleneck(&t), "wait");
+    }
+
+    #[test]
+    fn bottleneck_ignores_negative_values() {
+        let t = Timings {
+            blocked: Some(-1.0),
+            dns: Some(5.0),
+            connect: None,
+            send: 1.0,
+            wait: 2.0,
+            receive: 3.0,
+            ssl: None,
+            comment: None,
+        };
+        assert_eq!(timing_bottleneck(&t), "dns");
+    }
+
+    #[test]
+    fn bottleneck_all_negative_returns_unknown() {
+        let t = Timings {
+            blocked: Some(-1.0),
+            dns: Some(-2.0),
+            connect: Some(-3.0),
+            send: -1.0,
+            wait: -2.0,
+            receive: -3.0,
+            ssl: Some(-1.0),
+            comment: None,
+        };
+        assert_eq!(timing_bottleneck(&t), "unknown");
     }
 }
