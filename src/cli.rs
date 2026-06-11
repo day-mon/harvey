@@ -30,10 +30,6 @@ pub struct GlobalArgs {
     pub no_color: bool,
 }
 
-// ---------------------------------------------------------------------------
-// Top-level CLI and subcommand enum
-// ---------------------------------------------------------------------------
-
 /// AI-native HAR file analyzer.
 ///
 /// Analyze HTTP Archive files with machine-readable output designed
@@ -41,7 +37,7 @@ pub struct GlobalArgs {
 #[derive(Debug, Parser)]
 #[command(
     author,
-    version,
+    version = env!("VERGEN_GIT_DESCRIBE"),
     about = "AI-native HAR (HTTP Archive) file analyzer",
     long_about = "Analyze HAR files from browser DevTools with machine-readable output.\n\nDesigned for both humans and autonomous AI agents.",
     subcommand_required = true,

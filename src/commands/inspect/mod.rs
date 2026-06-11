@@ -370,7 +370,7 @@ fn render_multi_human(matches: &[(usize, &Entry)]) -> Result<()> {
 
 /// Render multiple entries as NDJSON (one JSON object per line).
 fn render_multi_json(matches: &[(usize, &Entry)]) -> Result<()> {
-    let mut stdout = std::io::stdout();
+    let mut stdout = std::io::BufWriter::new(std::io::stdout());
 
     for (idx, entry) in matches {
         let output = build_output(*idx, entry);

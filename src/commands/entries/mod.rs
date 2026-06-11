@@ -280,7 +280,7 @@ fn render_human(entries: &[&Entry]) -> Result<()> {
 
 /// Render entries as JSONL (one JSON object per line).
 fn render_jsonl(entries: &[&Entry], include_body: bool) -> Result<()> {
-    let mut stdout = std::io::stdout();
+    let mut stdout = std::io::BufWriter::new(std::io::stdout());
 
     for entry in entries {
         let body_size = stats::response_size(entry);

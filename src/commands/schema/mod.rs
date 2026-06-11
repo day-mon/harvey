@@ -50,16 +50,16 @@ pub fn run(args: &SchemaArgs, _global: &GlobalArgs) -> Result<()> {
 fn get_schema(command: SchemaCommand) -> Result<String> {
     let schema_str = match command {
         SchemaCommand::Analyze => {
-            include_str!("../../schemas/analyze-output.json")
+            include_str!("../../../schemas/analyze-output.json")
         }
         SchemaCommand::Entries => {
-            include_str!("../../schemas/entries-output.json")
+            include_str!("../../../schemas/entries-output.json")
         }
         SchemaCommand::Domains => {
-            include_str!("../../schemas/domains-output.json")
+            include_str!("../../../schemas/domains-output.json")
         }
         SchemaCommand::Inspect => {
-            include_str!("../../schemas/inspect-output.json")
+            include_str!("../../../schemas/inspect-output.json")
         }
     };
     // Validate that it's actually valid JSON.

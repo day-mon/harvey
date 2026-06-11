@@ -150,16 +150,19 @@ fn time_range(
         return (None, None);
     }
 
-    let mut times: Vec<&str> = entries
-        .iter()
-        .map(|e| e.started_date_time.as_str())
-        .collect();
-    times.sort_unstable();
+    let mut min = &entries[0].started_date_time;
+    let mut max = &entries[0].started_date_time;
 
-    let start = times.first().map(|s| (*s).to_owned());
-    let end = times.last().map(|s| (*s).to_owned());
+    for entry in &entries[1..] {
+        if entry.started_date_time < *min {
+            min = &entry.started_date_time;
+        }
+        if entry.started_date_time > *max {
+            max = &entry.started_date_time;
+        }
+    }
 
-    (start, end)
+    (Some(min.clone()), Some(max.clone()))
 }
 
 /// Format a byte count as a human-readable string.

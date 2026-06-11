@@ -1,4 +1,7 @@
-#![allow(missing_docs)]
+#![expect(
+    missing_docs,
+    reason = "test files do not need module-level docs"
+)]
 
 use std::path::PathBuf;
 
