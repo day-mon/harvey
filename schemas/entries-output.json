@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EntriesOutput",
+  "description": "Output of `harvey entries --json`. One JSON object per line (JSONL / NDJSON format). Each line matches this schema.",
+  "type": "object",
+  "properties": {
+    "startedDateTime": {
+      "type": "string",
+      "description": "ISO 8601 request start timestamp."
+    },
+    "time": {
+      "type": "number",
+      "description": "Total elapsed request time in milliseconds."
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string" },
+        "url": { "type": "string" },
+        "httpVersion": { "type": "string" },
+        "cookies": { "type": "array" },
+        "headers": { "type": "array" },
+        "queryString": { "type": "array" },
+        "postData": {},
+        "headersSize": { "type": "integer" },
+        "bodySize": { "type": "integer" }
+      }
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "integer" },
+        "statusText": { "type": "string" },
+        "httpVersion": { "type": "string" },
+        "cookies": { "type": "array" },
+        "headers": { "type": "array" },
+        "content": {
+          "type": "object",
+          "properties": {
+            "size": { "type": "integer" },
+            "mimeType": { "type": "string" }
+          }
+        },
+        "redirectURL": { "type": "string" },
+        "headersSize": { "type": "integer" },
+        "bodySize": { "type": "integer" }
+      }
+    },
+    "cache": { "type": "object" },
+    "timings": {
+      "type": "object",
+      "properties": {
+        "blocked": { "type": "number" },
+        "dns": { "type": "number" },
+        "connect": { "type": "number" },
+        "send": { "type": "number" },
+        "wait": { "type": "number" },
+        "receive": { "type": "number" },
+        "ssl": { "type": "number" }
+      }
+    },
+    "_computed": {
+      "type": "object",
+      "description": "Harvey-computed fields not in the HAR spec.",
+      "properties": {
+        "total_bytes": { "type": "integer" },
+        "domain": { "type": "string" },
+        "content_type": { "type": "string" }
+      }
+    }
+  }
+}

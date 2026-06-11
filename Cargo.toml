@@ -1,0 +1,109 @@
+[package]
+name = "harvey"
+version = "0.1.0"
+edition = "2021"
+description = "AI-native HAR (HTTP Archive) file analyzer"
+license = "MIT"
+repository = "https://github.com/example/harvey"
+readme = "README.md"
+keywords = ["cli", "har", "http", "network", "analysis"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+anyhow = "1"
+chromiumoxide = "0.9"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.6", features = ["derive", "env", "wrap_help"] }
+futures = "0.3"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tabled = "0.18"
+thiserror = "2"
+tokio = { version = "1.52.3", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2"
+
+# ============================================
+# RUST MAGIC LINTER - MAXIMUM PRESET
+# ============================================
+# Everything at deny level - maximum strictness
+# WARNING: This is very strict and may require significant code changes
+# https://github.com/vicnaum/rust-magic-linter
+
+[lints.rust]
+# Safety - forbid means even #![allow(...)] can't override
+unsafe_code = "forbid"
+non_ascii_idents = "forbid"
+
+# Quality enforcement
+warnings = "deny"
+rust_2018_idioms = { level = "deny", priority = -1 }
+future_incompatible = { level = "deny", priority = -1 }
+nonstandard_style = { level = "deny", priority = -1 }
+
+# Documentation enforcement
+missing_docs = "deny"
+missing_debug_implementations = "deny"
+# Style preference — clap arg structs are not value types even when Copy-able
+missing_copy_implementations = "allow"
+unfulfilled_lint_expectations = "deny"
+
+[lints.rustdoc]
+all = { level = "deny", priority = -1 }
+
+[lints.clippy]
+# === all lints groups ===
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+cargo = { level = "deny", priority = -1 }
+
+# [panic]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+panic_in_result_fn = "deny"
+
+# [allow]
+allow_attributes = "deny"
+allow_attributes_without_reason = "deny"
+
+# [dbg]
+dbg_macro = "deny"
+
+# [todo]
+todo = "deny"
+unimplemented = "deny"
+
+# [print]
+print_stdout = "deny"
+print_stderr = "deny"
+
+# [async]
+await_holding_lock = "deny"
+large_futures = "deny"
+
+# [process]
+exit = "deny"
+mem_forget = "deny"
+
+# [perf]
+large_stack_arrays = "deny"
+large_types_passed_by_value = "deny"
+
+# === relaxations ===
+# Only the absolutely necessary ones
+multiple_crate_versions = "allow"   # Unavoidable with transitive deps
+
+# [cast]
+# Cast lints - too many false positives even for strict projects
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_precision_loss = "allow"
+cast_possible_wrap = "allow"
+
+# [complexity]
+# Nursery lints that have too many false positives
+cognitive_complexity = "allow"      # Use clippy.toml threshold instead

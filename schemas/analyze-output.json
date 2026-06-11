@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnalyzeOutput",
+  "description": "Output of `harvey analyze --json`.",
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "description": "Schema version identifier.",
+      "const": "1.0"
+    },
+    "file": {
+      "type": "string",
+      "description": "Path to the analyzed HAR file."
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "total_entries": { "type": "integer" },
+        "total_bytes": { "type": "integer" },
+        "avg_time_ms": { "type": "number" },
+        "p50_time_ms": { "type": "number" },
+        "p95_time_ms": { "type": "number" },
+        "p99_time_ms": { "type": "number" },
+        "min_time_ms": { "type": "number" },
+        "max_time_ms": { "type": "number" },
+        "status_distribution": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        },
+        "content_type_distribution": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        },
+        "method_distribution": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        },
+        "unique_domains": { "type": "integer" }
+      }
+    },
+    "time_start": {
+      "type": ["string", "null"],
+      "description": "ISO 8601 timestamp of the earliest request."
+    },
+    "time_end": {
+      "type": ["string", "null"],
+      "description": "ISO 8601 timestamp of the latest request."
+    }
+  }
+}

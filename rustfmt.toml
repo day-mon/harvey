@@ -1,0 +1,3 @@
+max_width = 80
+# Prevent rustfmt from collapsing multi-line #[arg(...)] back to single-line
+attr_fn_like_width = 50

@@ -1,0 +1,34 @@
+# ============================================
+# CLIPPY CONFIGURATION
+# ============================================
+# Place this file in your project root (next to Cargo.toml)
+# These thresholds complement the lint configuration in Cargo.toml
+
+# Complexity thresholds - prevent sprawling functions
+cognitive-complexity-threshold = 15
+type-complexity-threshold = 200
+too-many-lines-threshold = 100
+
+# Domain terms that shouldn't trigger spelling warnings in docs
+# Add your own domain-specific terms here
+doc-valid-idents = [
+    "HAR",      # HTTP Archive
+    "JSON",     # JavaScript Object Notation
+    "JSONL",    # JSON Lines
+    "CLI",      # Command Line Interface
+    "AI",       # Artificial Intelligence
+    "URL",      # Uniform Resource Locator
+    "HTTP",     # HyperText Transfer Protocol
+    "HTTPS",    # HTTP Secure
+    "MIME",     # Multipurpose Internet Mail Extensions
+    "Regex",    # Regular Expression
+    "NDJSON",   # Newline Delimited JSON
+    "API",      # Application Programming Interface
+    "MVP",      # Minimum Viable Product
+    "HARvey",   # Tool name
+    "jq",       # JSON processor
+    "DevTools", # Browser Developer Tools
+    "CDN",      # Content Delivery Network
+    "ISO",      # International Organization for Standardization
+    "mimeType", # HAR spec field name
+]

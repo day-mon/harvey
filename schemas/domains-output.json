@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DomainsOutput",
+  "description": "Output of `harvey domains --json`.",
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "description": "Schema version identifier.",
+      "const": "1.0"
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": { "type": "string" },
+          "request_count": { "type": "integer" },
+          "total_bytes": { "type": "integer" },
+          "avg_time_ms": { "type": "number" },
+          "status_summary": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" }
+          }
+        }
+      }
+    }
+  }
+}

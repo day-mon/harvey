@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InspectOutput",
+  "description": "Output of `harvey inspect --json`. Full detail for a single HAR entry.",
+  "type": "object",
+  "properties": {
+    "format_version": { "type": "string", "const": "1.0" },
+    "entry_index": { "type": "integer", "description": "1-based entry index." },
+    "startedDateTime": { "type": "string" },
+    "time": { "type": "number" },
+    "request": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string" },
+        "url": { "type": "string" },
+        "httpVersion": { "type": "string" },
+        "cookies": { "type": "array" },
+        "headers": { "type": "array" },
+        "queryString": { "type": "array" },
+        "postData": {},
+        "headersSize": { "type": "integer" },
+        "bodySize": { "type": "integer" }
+      }
+    },
+    "response": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "integer" },
+        "statusText": { "type": "string" },
+        "httpVersion": { "type": "string" },
+        "cookies": { "type": "array" },
+        "headers": { "type": "array" },
+        "content": {
+          "type": "object",
+          "properties": {
+            "size": { "type": "integer" },
+            "mimeType": { "type": "string" },
+            "text": { "type": "string" }
+          }
+        },
+        "redirectURL": { "type": "string" },
+        "headersSize": { "type": "integer" },
+        "bodySize": { "type": "integer" }
+      }
+    },
+    "timings": {
+      "type": "object",
+      "properties": {
+        "blocked": { "type": "number" },
+        "dns": { "type": "number" },
+        "connect": { "type": "number" },
+        "send": { "type": "number" },
+        "wait": { "type": "number" },
+        "receive": { "type": "number" },
+        "ssl": { "type": "number" }
+      }
+    },
+    "cache": { "type": "object" },
+    "_computed": {
+      "type": "object",
+      "properties": {
+        "total_bytes": { "type": "integer" },
+        "domain": { "type": "string" },
+        "content_type": { "type": "string" },
+        "bottleneck": { "type": "string", "description": "Slowest timing phase: blocked, dns, connect, ssl, send, wait, or receive." }
+      }
+    }
+  }
+}
