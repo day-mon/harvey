@@ -1,9 +1,3 @@
-#![expect(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    reason = "unwrap/expect are idiomatic in integration tests"
-)]
-
 //! Integration tests for the `harvey` library.
 //!
 //! These tests exercise the core HAR parsing, filtering, and statistics

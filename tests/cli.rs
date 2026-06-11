@@ -1,12 +1,4 @@
-#![expect(
-    missing_docs,
-    reason = "test files do not need module-level docs"
-)]
-#![expect(
-    clippy::unwrap_used,
-    clippy::panic,
-    reason = "unwrap/panic are idiomatic in tests"
-)]
+#![expect(missing_docs, reason = "test files do not need module-level docs")]
 
 use std::path::PathBuf;
 

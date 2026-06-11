@@ -9,6 +9,13 @@ readme = "README.md"
 keywords = ["cli", "har", "http", "network", "analysis"]
 categories = ["command-line-utilities"]
 
+[package.metadata.rusty-hook]
+rusty-hook = { config_version = "1" }
+
+[hooks]
+pre-commit = "cargo fmt -- --check && cargo clippy --lib --bins -- -D warnings && cargo test"
+
+
 [dependencies]
 anyhow = "1"
 chromiumoxide = "0.9"
@@ -110,3 +117,6 @@ cast_possible_wrap = "allow"
 # [complexity]
 # Nursery lints that have too many false positives
 cognitive_complexity = "allow"      # Use clippy.toml threshold instead
+
+[dev-dependencies]
+rusty-hook = "0.11.2"

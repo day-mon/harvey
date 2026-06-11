@@ -1,4 +1,3 @@
-#![expect(clippy::float_cmp, reason = "float comparisons are intentional in statistics tests")]
 //! Unit tests for `har::stats`.
 
 use super::{compute, extract_domain, percentile, response_size};

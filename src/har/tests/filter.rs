@@ -1,4 +1,3 @@
-#![expect(clippy::expect_used, reason = "expect is idiomatic in tests")]
 //! Unit tests for `har::filter`.
 
 use super::EntryPredicate;
