@@ -1,6 +1,8 @@
 [workspace]
 publish = false
+git_only = true
 
 [[package]]
 name = "harvey"
 publish = false
+git_only = true
