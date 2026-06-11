@@ -13,7 +13,7 @@ use chromiumoxide::cdp::browser_protocol::network::{
 };
 use chromiumoxide::Page as ChromiumPage;
 use clap::Args;
-use futures::{FutureExt, StreamExt};
+use futures::{future, FutureExt, StreamExt};
 use regex::Regex;
 use serde::Serialize;
 use tabled::{
@@ -430,7 +430,55 @@ async fn run_watch_loop(
     (requests, responses, finished)
 }
 
-async fn fetch_body(
+/// Build output entries by pairing staged requests with responses.
+async fn build_entries(
+    requests: &HashMap<RequestId, StagedRequest>,
+    responses: &[StagedResponse],
+    finished: &[RequestId],
+    page: &Arc<ChromiumPage>,
+    include_body: bool,
+) -> Vec<CaptureEntry> {
+    let body_futures: Vec<_> = responses
+        .iter()
+        .map(|resp| {
+            let page = Arc::clone(page);
+            let request_id = resp.request_id.clone();
+            let need_body = include_body && finished.contains(&resp.request_id);
+            async move {
+                if need_body {
+                    fetch_body_inner(&page, &request_id).await
+                } else {
+                    None
+                }
+            }
+        })
+        .collect();
+
+    let bodies = future::join_all(body_futures).await;
+
+    let mut entries = Vec::with_capacity(responses.len());
+    for (i, resp) in responses.iter().enumerate() {
+        let req = requests.get(&resp.request_id);
+        let req_headers: HashMap<String, String> = req
+            .map(|r| r.request_headers.iter().cloned().collect())
+            .unwrap_or_default();
+
+        entries.push(CaptureEntry {
+            url: resp.url.clone(),
+            method: req.map_or_else(|| "UNKNOWN".into(), |r| r.method.clone()),
+            status: resp.status,
+            status_text: resp.status_text.clone(),
+            mime_type: resp.mime_type.clone(),
+            size: resp.encoded_data_length,
+            body: bodies[i].clone(),
+            request_headers: req_headers,
+            response_headers: resp.response_headers.iter().cloned().collect(),
+        });
+    }
+    entries
+}
+
+async fn fetch_body_inner(
     page: &Arc<ChromiumPage>,
     request_id: &RequestId,
 ) -> Option<String> {
@@ -445,21 +493,6 @@ async fn fetch_body(
         }
         Err(_) => None,
     }
-}
-
-fn json_headers_to_vec<T: Serialize>(headers: &T) -> Vec<(String, String)> {
-    let json = serde_json::to_value(headers).unwrap_or_default();
-    let mut pairs = Vec::new();
-    if let Some(obj) = json.as_object() {
-        for (k, v) in obj {
-            let val = match v {
-                serde_json::Value::String(s) => s.clone(),
-                other => other.to_string(),
-            };
-            pairs.push((k.clone(), val));
-        }
-    }
-    pairs
 }
 
 /// Drain buffered request events into a staged map.
@@ -527,39 +560,19 @@ async fn drain_finished(
     finished
 }
 
-/// Build output entries by pairing staged requests with responses.
-async fn build_entries(
-    requests: &HashMap<RequestId, StagedRequest>,
-    responses: &[StagedResponse],
-    finished: &[RequestId],
-    page: &Arc<ChromiumPage>,
-    include_body: bool,
-) -> Vec<CaptureEntry> {
-    let mut entries = Vec::new();
-    for resp in responses {
-        let req = requests.get(&resp.request_id);
-        let body = if include_body && finished.contains(&resp.request_id) {
-            fetch_body(page, &resp.request_id).await
-        } else {
-            None
-        };
-        let req_headers: HashMap<String, String> = req
-            .map(|r| r.request_headers.iter().cloned().collect())
-            .unwrap_or_default();
-
-        entries.push(CaptureEntry {
-            url: resp.url.clone(),
-            method: req.map_or_else(|| "UNKNOWN".into(), |r| r.method.clone()),
-            status: resp.status,
-            status_text: resp.status_text.clone(),
-            mime_type: resp.mime_type.clone(),
-            size: resp.encoded_data_length,
-            body,
-            request_headers: req_headers,
-            response_headers: resp.response_headers.iter().cloned().collect(),
-        });
+fn json_headers_to_vec<T: Serialize>(headers: &T) -> Vec<(String, String)> {
+    let json = serde_json::to_value(headers).unwrap_or_default();
+    let mut pairs = Vec::new();
+    if let Some(obj) = json.as_object() {
+        for (k, v) in obj {
+            let val = match v {
+                serde_json::Value::String(s) => s.clone(),
+                other => other.to_string(),
+            };
+            pairs.push((k.clone(), val));
+        }
     }
-    entries
+    pairs
 }
 
 fn render_human(entries: &[CaptureEntry]) -> Result<()> {
@@ -590,7 +603,7 @@ fn render_human(entries: &[CaptureEntry]) -> Result<()> {
 }
 
 fn render_jsonl(entries: &[CaptureEntry]) -> Result<()> {
-    let mut stdout = std::io::stdout();
+    let mut stdout = std::io::BufWriter::new(std::io::stdout());
     for entry in entries {
         let line = serde_json::to_string(entry)
             .context("failed to serialize capture entry")?;

@@ -25,6 +25,9 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = "2"
 
+[build-dependencies]
+vergen-git2 = { version = "10", features = ["build"] }
+
 # ============================================
 # RUST MAGIC LINTER - MAXIMUM PRESET
 # ============================================

@@ -1,6 +1,6 @@
 //! Aggregate statistics for HAR files.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
 use serde::Serialize;
 
@@ -90,27 +90,25 @@ pub fn compute(log: &Log) -> Stats {
     let p99_time_ms = percentile(&times, 99.0);
 
     let mut status_distribution: BTreeMap<u16, usize> = BTreeMap::new();
+    let mut content_type_distribution: BTreeMap<String, usize> =
+        BTreeMap::new();
+    let mut method_distribution: BTreeMap<String, usize> = BTreeMap::new();
+    let mut domains: HashSet<String> = HashSet::new();
+
     for entry in &log.entries {
         *status_distribution
             .entry(entry.response.status)
             .or_insert(0) += 1;
-    }
-
-    let mut content_type_distribution: BTreeMap<String, usize> =
-        BTreeMap::new();
-    for entry in &log.entries {
-        let ct = entry.response.content.mime_type.clone();
-        *content_type_distribution.entry(ct).or_insert(0) += 1;
-    }
-
-    let mut method_distribution: BTreeMap<String, usize> = BTreeMap::new();
-    for entry in &log.entries {
+        *content_type_distribution
+            .entry(entry.response.content.mime_type.clone())
+            .or_insert(0) += 1;
         *method_distribution
             .entry(entry.request.method.clone())
             .or_insert(0) += 1;
+        domains.insert(extract_domain(entry));
     }
 
-    let unique_domains = count_unique_domains(&log.entries);
+    let unique_domains = domains.len();
 
     Stats {
         total_entries,
@@ -169,14 +167,6 @@ pub fn extract_domain(entry: &Entry) -> String {
         .ok()
         .and_then(|u| u.host_str().map(std::string::ToString::to_string))
         .unwrap_or_else(|| "unknown".to_owned())
-}
-
-/// Count the number of unique domains across all entries.
-fn count_unique_domains(entries: &[Entry]) -> usize {
-    let mut domains: Vec<String> = entries.iter().map(extract_domain).collect();
-    domains.sort();
-    domains.dedup();
-    domains.len()
 }
 
 /// Compute a percentile value from a sorted slice.
