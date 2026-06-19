@@ -197,3 +197,19 @@ fn percentile_empty_slice() {
     let empty: [f64; 0] = [];
     assert_eq!(percentile(&empty, 50.0), 0.0);
 }
+
+#[test]
+fn compute_with_nan_time() {
+    // NaN should not panic during sort — total_cmp provides a total order.
+    let entries = vec![
+        make_entry(200, 100, "text/html", f64::NAN, "GET", "https://a.com/"),
+        make_entry(200, 100, "text/html", 50.0, "GET", "https://a.com/"),
+        make_entry(200, 100, "text/html", 10.0, "GET", "https://a.com/"),
+    ];
+    let log = make_log(entries);
+    let stats = compute(&log);
+    // With total_cmp, NaN is ordered after +inf, so max is NaN and min is 10.0.
+    assert!(stats.max_time_ms.is_nan());
+    assert_eq!(stats.min_time_ms, 10.0);
+    assert_eq!(stats.total_entries, 3);
+}

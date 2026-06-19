@@ -75,9 +75,7 @@ pub fn compute(log: &Log) -> Stats {
     }
 
     let mut times: Vec<f64> = log.entries.iter().map(|e| e.time).collect();
-    times.sort_unstable_by(|a, b| {
-        a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)
-    });
+    times.sort_unstable_by(f64::total_cmp);
 
     let total_bytes: u64 = log.entries.iter().map(response_size).sum();
 

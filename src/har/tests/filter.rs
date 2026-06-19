@@ -141,3 +141,15 @@ fn filter_bad_regex_returns_err() {
     let result = EntryPredicate::new().with_url_pattern("[invalid");
     assert!(result.is_err());
 }
+
+#[test]
+fn filter_regex_builder_accepts_normal_pattern() {
+    // Regression: ensure RegexBuilder with size limits doesn't break
+    // valid patterns.
+    let e =
+        make_entry(200, "GET", "text/html", "https://api.example.com/v1/users");
+    let pred = EntryPredicate::new()
+        .with_url_pattern(r"^https://api\.example\.com/v\d+/")
+        .expect("valid regex");
+    assert!(pred.matches(&e));
+}

@@ -1,6 +1,6 @@
 //! Entry filtering and predicate logic.
 
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 
 use crate::har::types::Entry;
 
@@ -39,7 +39,12 @@ impl EntryPredicate {
         mut self,
         pattern: &str,
     ) -> Result<Self, regex::Error> {
-        self.url_regex = Some(Regex::new(pattern)?);
+        self.url_regex = Some(
+            RegexBuilder::new(pattern)
+                .size_limit(1_048_576)
+                .dfa_size_limit(1_048_576)
+                .build()?,
+        );
         Ok(self)
     }
 

@@ -219,11 +219,7 @@ pub fn run(args: &EntriesArgs, global: &GlobalArgs) -> Result<()> {
 fn sort_entries(entries: &mut [&Entry], by: SortBy, dir: SortDir) {
     match by {
         SortBy::Time => {
-            entries.sort_unstable_by(|a, b| {
-                a.time
-                    .partial_cmp(&b.time)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            });
+            entries.sort_unstable_by(|a, b| f64::total_cmp(&a.time, &b.time));
         }
         SortBy::Size => {
             entries.sort_unstable_by_key(|e| stats::response_size(e));
@@ -347,6 +343,8 @@ fn render_jsonl(entries: &[&Entry], include_body: bool) -> Result<()> {
         std::io::Write::write_all(&mut stdout, b"\n")
             .context("failed to write newline")?;
     }
+
+    std::io::Write::flush(&mut stdout).context("failed to flush stdout")?;
 
     Ok(())
 }
